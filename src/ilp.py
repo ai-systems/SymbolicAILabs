@@ -6,28 +6,14 @@ from trimlogic.predicate import RuleBasedPredicate
 from trimlogic.predicate import AtomFactory
 from trimlogic.foil import foil
 from trimlogic.algorithm import fol_bc_ask
-from helper import assertFollows, print_rules, Temperature, Carbon
+from trimlogic.term import Atom
+from helper import assertFollows, print_rules
+
 
 knowledgeBase = KnowledgeBase()
 
-highTemp = RuleBasedPredicate('HIGH_TEMPERATURE', (Temperature,))
-medTemp = RuleBasedPredicate('MEDIUM_TEMPERATURE', (Temperature,))
-lowTemp = RuleBasedPredicate('LOW_TEMPERATURE', (Temperature,))
-knowledgeBase.add_all([highTemp, medTemp, lowTemp])
 
-highCarbon = RuleBasedPredicate('HIGH_CARBON', (Carbon,))
-medCarbon = RuleBasedPredicate('MEDIUM_CARBON', (Carbon,))
-lowCarbon = RuleBasedPredicate('LOW_CARBON', (Carbon,))
-knowledgeBase.add_all([highCarbon, medCarbon, lowCarbon])
-
-predicate_dict = {
-    'HIGH_CARBON': highCarbon,
-    'MEDIUM_CARBON': medCarbon,
-    'LOW_CARBON': lowCarbon,
-    'HIGH_TEMPERATURE': highTemp,
-    'MEDIUM_TEMPERATURE': medTemp,
-    'LOW_TEMPERATURE': lowTemp,
-}
+predicate_dict = {}
 
 
 fact_file = '%s/facts.ilp' % sys.argv[1]
@@ -47,14 +33,12 @@ for line in fact_file:
     predicate = data[0]
     var = data[1].split(')')[0]
     if predicate not in predicate_dict:
-        message = '%s predicate does not exist' % predicate
-        raise Exception(message)
+        new_pr = RuleBasedPredicate(predicate, (Atom,))
+        predicate_dict[predicate] = new_pr
+        knowledgeBase.add(new_pr)
 
     rule = predicate_dict[predicate]
-    if 'CARBON' in predicate_dict:
-        map(rule.add_rule, [(Carbon(var),)])
-    else:
-        map(rule.add_rule, [(Temperature(var),)])
+    map(rule.add_rule, [(Atom(var),)])
 
 
 def process_predicates(process_file, new_predicates):
@@ -71,10 +55,10 @@ def process_predicates(process_file, new_predicates):
         data = line.split('(')
         predicate = data[0]
         if predicate not in new_predicates:
-            rule_pred = RuleBasedPredicate(predicate, (Temperature, Carbon))
+            rule_pred = RuleBasedPredicate(predicate, (Atom, Atom))
             new_predicates[predicate] = rule_pred
         var1, var2 = data[1].split(')')[0].split(',')
-        tuples.append([Temperature(var1), Carbon(var2)])
+        tuples.append([Atom(var1), Atom(var2)])
 
     return new_predicates, tuples
 
