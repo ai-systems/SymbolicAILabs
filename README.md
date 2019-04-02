@@ -1,4 +1,4 @@
-# Symoblic AI Labs 
+# Symbolic AI Labs 
 ## Steel Example
 
 Original Code Obtained from: https://github.com/johntrimble/foil-python
