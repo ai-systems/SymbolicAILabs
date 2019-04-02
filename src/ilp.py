@@ -76,6 +76,9 @@ positive_file = open(positive_file)
 new_prdicates, positive_tuples = process_predicates(
     positive_file, new_predicates)
 
+if len(new_predicates.values()) > 1:
+    print('Code only currently supports one predicate learning at a time')
+    exit()
 for pred in new_predicates.values():
     knowledgeBase.add(pred)
     foil(pred, positive_tuples, negative_tuples, knowledgeBase, ordering=None)
